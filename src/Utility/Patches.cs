@@ -1,6 +1,8 @@
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Linq;
 using Vintagestory.API.Common;
+using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
 namespace UsePlanksInPitKiln;
@@ -9,13 +11,14 @@ public static class Patches
 {
     public static void PatchBuildMats(this Block blockPitKiln, ICoreAPI api)
     {
-        List<JsonItemStackBuildStage> _sticks = new();
+        List<JsonItemStackBuildStage> planks = new();
 
-        foreach (Item item in api.World.Items.Where(x => x.WildCardMatch("plank-*")))
+        foreach (Item item in api.World.Items.Where(x => x.WildCardMatch("plank-*") && !x.IsMissing))
         {
-            item.ChangeAttribute("block/planks", "placeSound");
+            item.Attributes ??= new JsonObject(new JObject());
+            item.Attributes.Token["placeSound"] = JToken.FromObject("block/planks");
 
-            _sticks.Add(new JsonItemStackBuildStage()
+            planks.Add(new JsonItemStackBuildStage()
             {
                 Type = item.ItemClass,
                 Code = item.Code,
@@ -26,9 +29,10 @@ public static class Patches
 
         JsonItemStackBuildStage[] sticks = blockPitKiln.Attributes["buildMats"]["sticks"].AsObject<JsonItemStackBuildStage[]>();
         sticks[0].EleCode = "Stick";
-        sticks = sticks.Concat(_sticks).ToArray();
+        sticks = sticks.Concat(planks).ToArray();
 
-        blockPitKiln.ChangeAttribute(sticks, "buildMats", "sticks");
+        blockPitKiln.Attributes ??= new JsonObject(new JObject());
+        blockPitKiln.Attributes.Token["buildMats"]["sticks"] = JToken.FromObject(sticks);
     }
 
     public static void PatchModelConfigs(this Block blockPitKiln)
@@ -41,6 +45,7 @@ public static class Patches
             val.BuildStages[6] = "{eleCode}layer2/*";
         }
 
-        blockPitKiln.ChangeAttribute(modelConfigs, "modelConfigs");
+        blockPitKiln.Attributes ??= new JsonObject(new JObject());
+        blockPitKiln.Attributes.Token["modelConfigs"] = JToken.FromObject(modelConfigs);
     }
 }

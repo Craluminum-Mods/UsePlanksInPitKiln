@@ -3,7 +3,7 @@
   "modid": "useplanksinpitkiln",
   "name": "Use Planks In Pit Kiln",
   "description": "Planks can now be used as a replacement of sticks in a pit kiln",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "authors": ["Craluminum2413"],
   "dependencies": {
     "game": "1.18.8"
